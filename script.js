@@ -71,3 +71,22 @@ function strength(){
         setIndicator('#f00')
     }
 }
+
+async function copyContent(){
+    try {
+        await navigator.clipboard.writeText(passwordDisplay.value);
+        copyMsg.innerText="copied"
+    } catch (error) {
+        copyMsg.innerText="Failed";
+    }
+    copyMsg.classList.add("active")
+
+    setTimeout(()=>{
+        copyMsg.classList.remove("active")
+    },2000);
+}
+
+copyBtn.addEventListener('click',()=>{
+    if(passwordDisplay.value)
+        copyContent();
+})
