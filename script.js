@@ -11,99 +11,142 @@ const indicator = document.querySelector('[data-indicator]');
 const generator = document.querySelector('.generateBtn');
 const allChecks = document.querySelectorAll('input[type=checkbox]');
 
-const symbols='!@#$%&*'
+const symbols = '!@#$%&*';
 
 let password = "";
 let passwordLength = 5;
 let checkCount = 1;
 
+
 function handleSlider() {
     inputSlider.value = passwordLength;
     lengthDisplay.innerText = passwordLength;
+  
 }
+
+handleSlider();
 
 inputSlider.addEventListener('input', (e) => {
     passwordLength = e.target.value;
     handleSlider();
 });
 
-handleSlider();
-
-function getrandInt(min,max){
-    return Math.floor(Math.random()*(max-min)+min)
-}
-function genearteNum(){
-    return getrandInt(0,9)
-}
-function generateLcase(){
-    return String.fromCharCode(getrandInt(97,123))
-}
-function generateUcase(){
-    return String.fromCharCode(getrandInt(65,91))
-}
-function generateSymbol(){
-    const randSym=getrandInt(0,symbols.length)
-    return symbols.charAt(randSym)
+function getrandInt(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
 }
 
-function setIndicator(color){
+function generateNum() {
+    return getrandInt(0, 10).toString();
+}
+
+function generateLcase() {
+    return String.fromCharCode(getrandInt(97, 123));
+}
+
+function generateUcase() {
+    return String.fromCharCode(getrandInt(65, 91));
+}
+
+function generateSymbol() {
+    const randSym = getrandInt(0, symbols.length);
+    return symbols.charAt(randSym);
+}
+
+function shufflePassword(pwd) {
+    return pwd.split('').sort(() => Math.random() - 0.5).join('');
+}
+
+
+function setIndicator(color) {
     indicator.style.backgroundColor = color;
 }
 
-function strength(){
-    let ucase=false;
-    let lcase=false;
-    let num=false;
-    let sym=false;
 
-    if(uppercaseCheck.checked) ucase=true;
-    if(lowercaseCheck.checked) lcase=true;
-    if(numberCheck.checked) num=true;
-    if(symbolCheck.checked) sym=true;
+function strength() {
+    let ucase = uppercaseCheck.checked;
+    let lcase = lowercaseCheck.checked;
+    let num = numberCheck.checked;
+    let sym = symbolCheck.checked;
 
-    if(ucase && lcase && num && sym && passwordLength >=8){
-        setIndicator('#0f0')
-    }else if(
-        (lcase || ucase) && (num || sym) && passwordLength>=6
-    ){
-        setIndicator('#ff0')
-    }else{
-        setIndicator('#f00')
+    if (ucase && lcase && num && sym && passwordLength >= 8) {
+        setIndicator('#0f0'); 
+    } else if ((ucase || lcase) && (num || sym) && passwordLength >= 6) {
+        setIndicator('#ff0'); 
+    } else {
+        setIndicator('#f00'); 
     }
 }
 
-async function copyContent(){
+
+async function copyContent() {
     try {
         await navigator.clipboard.writeText(passwordDisplay.value);
-        copyMsg.innerText="copied"
+        copyMsg.innerText = "copied";
     } catch (error) {
-        copyMsg.innerText="Failed";
+        copyMsg.innerText = "Failed";
     }
-    copyMsg.classList.add("active")
+    copyMsg.classList.add("active");
 
-    setTimeout(()=>{
-        copyMsg.classList.remove("active")
-    },2000);
+    setTimeout(() => {
+        copyMsg.classList.remove("active");
+    }, 2000);
 }
 
-function handleCheckBoxChange(){
-    checkCount=0;
-    allChecks.forEach((checkbox)=>{
-        if(checkbox.checked)
-            checkCount++
+
+function handleCheckBoxChange() {
+    checkCount = 0;
+    allChecks.forEach((checkbox) => {
+        if (checkbox.checked) checkCount++;
     });
-    if(passwordLength<checkCount){
-        passwordLength=checkCount;
-        handleSlider()
+
+    if (passwordLength < checkCount) {
+        passwordLength = checkCount;
+        handleSlider();
     }
 }
 
-allChecks.forEach((checkbox)=>{
-    checkbox.addEventListener('change',handleCheckBoxChange)
-})
+
+allChecks.forEach((checkbox) => {
+    checkbox.addEventListener('change', handleCheckBoxChange);
+});
 
 
-copyBtn.addEventListener('click',()=>{
-    if(passwordDisplay.value)
-        copyContent();
-})
+copyBtn.addEventListener('click', () => {
+    if (passwordDisplay.value) copyContent();
+});
+
+
+generator.addEventListener('click', () => {
+    if (passwordLength < checkCount) {
+        passwordLength = checkCount;
+        handleSlider();
+    }
+
+    password = "";
+    let funcArr = []; 
+
+    if (lowercaseCheck.checked) funcArr.push(generateLcase);
+    if (uppercaseCheck.checked) funcArr.push(generateUcase);
+    if (numberCheck.checked) funcArr.push(generateNum);
+    if (symbolCheck.checked) funcArr.push(generateSymbol);
+
+   
+    for (let i = 0; i < funcArr.length; i++) {
+        password += funcArr[i]();
+    }
+
+   
+    for (let i = funcArr.length; i < passwordLength; i++) {
+        let randIndex = getrandInt(0, funcArr.length);
+        password += funcArr[randIndex]();
+    }
+
+   
+    password = shufflePassword(password);
+    
+
+    
+    passwordDisplay.value = password;
+    strength();
+});
+
